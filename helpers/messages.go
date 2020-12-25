@@ -7,7 +7,9 @@ import (
 	"log"
 	"strings"
 	"time"
-)
+	)
+
+var tg_client = Initialise()
 
 type WaHandlers struct {
 	C *whatsapp.Conn
@@ -54,6 +56,7 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 		}
 		if utils.MessageValid(message.Text) != false{
 			log.Println(sender_name)
+			TG_Send(tg_client, message.Text, sender_name, false)
 		}
 
 	}

@@ -1,5 +1,6 @@
 {
   "bot_token": "",
+  "channel_id": -10011614221,
   "db_url": "",
   "db_name": "",
   "db_collection": "",

@@ -12,6 +12,7 @@ type ConfigJson struct {
 	DB_URL			string		`json:"db_url"`
 	DB_Name			string		`json:"db_name"`
 	DB_Col			string		`json:"db_collection"`
+	Channel_id		int 		`json:"channel_id"`
 	Filter_mode		string	 	`json:"filter_mode"`
 	Blacklist    	[]string 	`json:"blacklist_links"`
 	Whitelist		[]string	`json:"whitelist_links"`
@@ -56,6 +57,9 @@ func GetFilter_mode() string{
 	return Config.Filter_mode
 }
 
+func GetChannelId() int{
+	return Config.Channel_id
+}
 
 func MessageValid(message string) bool{
 	switch {
