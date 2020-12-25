@@ -14,7 +14,7 @@ func Login(wac *wa.Conn){
 	DelKey()
 	qrChan := make(chan string)
 	go func() {
-		terminal := qrT.New()
+		terminal := qrT.New2(qrT.ConsoleColors.BrightBlack, qrT.ConsoleColors.BrightWhite, qrT.QRCodeRecoveryLevels.Low)
 		terminal.Get(<-qrChan).Print()
 	}()
 	sess, err := wac.Login(qrChan)
