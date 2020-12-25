@@ -1,6 +1,7 @@
 package main
 
 import (
+	"F_WhatsappGO/helpers"
 	"F_WhatsappGO/utils"
 	"fmt"
 	wa "github.com/Rhymen/go-whatsapp"
@@ -20,14 +21,14 @@ func main()  {
 	check, sess := utils.GetKey()
 	if check != true{
 		fmt.Println("No access token found on db, Need to login")
-		utils.Login(wac)
+		helpers.Login(wac)
 	}
 	fmt.Println("Got access token, Trying to login")
 	_, err = wac.RestoreWithSession(sess)
 	if err != nil{
 		if strings.Contains(err.Error(), "admin login responded") == true{
 			fmt.Println("Access token Expired, Need re-login")
-			utils.Login(wac)
+			helpers.Login(wac)
 		}
 	}
 	fmt.Printf("login successful")

@@ -1,13 +1,14 @@
-package utils
+package helpers
 
 import (
+	"F_WhatsappGO/utils"
 	"fmt"
 	qrT "github.com/Baozisoftware/qrcode-terminal-go"
 	wa "github.com/Rhymen/go-whatsapp"
 	"os"
 )
 
-var db DB
+var db utils.DB
 
 func Login(wac *wa.Conn){
 	DelKey()
@@ -26,7 +27,7 @@ func Login(wac *wa.Conn){
 
 
 func GetKey() (bool, wa.Session) {
-	db.Access(GetDbUrl())
+	db.Access(utils.GetDbUrl())
 	confirm, key := db.GetKey()
 	if confirm != true{
 		return false, key
@@ -36,11 +37,11 @@ func GetKey() (bool, wa.Session) {
 }
 
 func DelKey(){
-	db.Access(GetDbUrl())
-	db.DelKeys()  //Deletes all the keys lmfao
+	db.Access(utils.GetDbUrl())
+	db.DelKeys() //Deletes all the keys lmfao
 }
 
 func PushKey(access wa.Session){
-	db.Access(GetDbUrl())
+	db.Access(utils.GetDbUrl())
 	db.Addkey(access)
 }
