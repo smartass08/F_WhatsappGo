@@ -7,9 +7,27 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
+var wg sync.WaitGroup
+
+func issalive(wac *wa.Conn){
+	defer wg.Done()
+	for {
+		pong, err := wac.AdminTest()
+		log.Printf("Is it alive : %v\n", pong)
+		if !pong || err != nil {
+			if strings.Contains(err.Error(), "connection timed out"){
+				log.Printf("Client seems to be disconnected, Please check your phone")
+			}
+
+		}
+		time.Sleep(time.Second*5)
+
+	}
+}
 
 func main() {
 	//Check latest webui client verion
@@ -43,13 +61,8 @@ func main() {
 	log.Println("login successful")
 	time.Sleep(time.Second*2)
 	wac.AddHandler(&helpers.WaHandlers{C: wac})
-
-	//test
-	pong, err := wac.AdminTest()
-	if !pong || err != nil {
-		log.Fatalf("error pinging in: %v\n", err)
-	}
-
+	wg.Add(1)
+	go issalive(wac)
 	//Disconnect safe
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
