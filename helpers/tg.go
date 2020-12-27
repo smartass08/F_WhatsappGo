@@ -4,12 +4,10 @@ import (
 	"F_WhatsappGo/utils"
 	"fmt"
 	"github.com/PaulSonOfLars/gotgbot"
-	"github.com/PaulSonOfLars/gotgbot/ext"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -22,17 +20,6 @@ func Initialise() *gotgbot.Updater {
 	logger := zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(cfg), os.Stdout, zap.InfoLevel))
 	l := logger.Sugar()
 	updater, err := gotgbot.NewUpdater(logger, utils.GetBotToken())
-	l.Info("Got Updater")
-	updater.UpdateGetter = ext.BaseRequester{
-		Client: http.Client{
-			Transport:     nil,
-			CheckRedirect: nil,
-			Jar:           nil,
-			Timeout:       time.Second * 65,
-		},
-		ApiUrl: ext.ApiUrl,
-	}
-	updater.Bot.Requester = ext.BaseRequester{Client: http.Client{Timeout: time.Second * 65}}
 	if err != nil {
 		l.Fatalw("failed to start updater", zap.Error(err))
 	}
