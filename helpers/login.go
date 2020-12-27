@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"F_WhatsappGoma	/utils"
+	"F_WhatsappGo/utils"
 	"fmt"
 	qrT "github.com/Baozisoftware/qrcode-terminal-go"
 	wa "github.com/Rhymen/go-whatsapp"
