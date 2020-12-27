@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"F_WhatsappGO/utils"
+	"F_WhatsappGo/utils"
 	"fmt"
 	"github.com/Rhymen/go-whatsapp"
 	"log"

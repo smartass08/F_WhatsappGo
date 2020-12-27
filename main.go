@@ -1,8 +1,7 @@
 package main
 
 import (
-	"F_WhatsappGO/helpers"
-	"F_WhatsappGO/utils"
+	"F_WhatsappGo/helpers"
 	wa "github.com/Rhymen/go-whatsapp"
 	"log"
 	"os"
@@ -29,7 +28,7 @@ func main() {
 	}
 	wac.SetClientVersion(v[0],v[1],v[2])
 
-	check, sess := utils.GetKey()
+	check, sess := helpers.GetKey()
 	if check != true{
 		log.Println("No access token found on db, Need to login")
 		helpers.Login(wac)
@@ -44,7 +43,7 @@ func main() {
 	}
 	log.Println("login successful")
 	time.Sleep(time.Second*2)
-	wac.AddHandler(&helpers.WaHandlers{wac})
+	wac.AddHandler(&helpers.WaHandlers{C: wac})
 
 	//test
 	pong, err := wac.AdminTest()
