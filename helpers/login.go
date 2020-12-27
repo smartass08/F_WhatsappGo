@@ -2,16 +2,18 @@ package helpers
 
 import (
 	"F_WhatsappGo/utils"
-	"fmt"
 	qrT "github.com/Baozisoftware/qrcode-terminal-go"
 	wa "github.com/Rhymen/go-whatsapp"
-	"os"
+	"log"
+	"strings"
 )
 
 var db utils.DB
 
-func Login(wac *wa.Conn){
-	DelKey()
+func Login(wac *wa.Conn, isretry bool){
+	if !isretry{
+		DelKey()
+	}
 	qrChan := make(chan string)
 	go func() {
 		terminal := qrT.New2(qrT.ConsoleColors.BrightBlack, qrT.ConsoleColors.BrightWhite, qrT.QRCodeRecoveryLevels.Low)
@@ -19,10 +21,17 @@ func Login(wac *wa.Conn){
 	}()
 	sess, err := wac.Login(qrChan)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "error during login: %v\n", err.Error())
+		log.Printf("error during login: %v\n", err.Error())
+		if strings.Contains(err.Error(), "qr code scan timed out"){
+			if isretry ==  true{
+				log.Fatalln("QR didn't got scan 2 times in a row, Exiting..")
+			}
+			Login(wac, true)
+		}
 		return
 	}
 	PushKey(sess)
+	return
 }
 
 

@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	//Check latest webui client verion
 	v, err := wa.CheckCurrentServerVersion()
@@ -31,14 +30,14 @@ func main() {
 	check, sess := helpers.GetKey()
 	if check != true{
 		log.Println("No access token found on db, Need to login")
-		helpers.Login(wac)
+		helpers.Login(wac, false)
 	}
 	log.Println("Got access token, Trying to login")
 	_, err = wac.RestoreWithSession(sess)
 	if err != nil{
 		if strings.Contains(err.Error(), "admin login responded") == true{
 			log.Println("Access token Expired, Need re-login")
-			helpers.Login(wac)
+			helpers.Login(wac, false)
 		}
 	}
 	log.Println("login successful")
