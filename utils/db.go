@@ -16,12 +16,12 @@ type DB struct {
 }
 
 type session struct {
-	ClientId string `json:"clientId"`
+	ClientId    string `json:"clientId"`
 	ClientToken string `json:"clientToken"`
-	EncKey []byte 		`json:"encKey"`
-	Mackey	[]byte 		`json:"macKey"`
-	ServerToken string  `json:"serverToken"`
-	Wid 		string `json:"wid"`
+	EncKey      []byte `json:"encKey"`
+	Mackey      []byte `json:"macKey"`
+	ServerToken string `json:"serverToken"`
+	Wid         string `json:"wid"`
 }
 
 func (C *DB) Access(url string) {
@@ -48,7 +48,7 @@ func (C DB) GetKey() (bool, whatsapp.Session) {
 	err := collection.FindOne(Ctx, bson.M{"key": "access"}).Decode(&sus)
 	if err != nil {
 		fmt.Println(err.Error())
-		if err == mongo.ErrNoDocuments{
+		if err == mongo.ErrNoDocuments {
 			return false, value
 		}
 	}
@@ -60,22 +60,22 @@ func (C DB) GetKey() (bool, whatsapp.Session) {
 		MacKey:      sus.Mackey,
 		Wid:         sus.Wid,
 	}
-	return true ,value
+	return true, value
 }
 
-func (C DB) Addkey(kek whatsapp.Session) bool{
+func (C DB) Addkey(kek whatsapp.Session) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 	collection := C.client.Database(GetDbName()).Collection(GetDbCollection())
 	_, err := collection.InsertOne(ctx, bson.M{
-		"key": "access",
-		"clientId" : kek.ClientId,
-		"clientToken" : kek.ClientToken,
-		"encKey" : kek.EncKey,
-		"macKey" : kek.MacKey,
-		"serverToken" : kek.ServerToken,
-		"wid" : kek.Wid})
-	if err != nil{
+		"key":         "access",
+		"clientId":    kek.ClientId,
+		"clientToken": kek.ClientToken,
+		"encKey":      kek.EncKey,
+		"macKey":      kek.MacKey,
+		"serverToken": kek.ServerToken,
+		"wid":         kek.Wid})
+	if err != nil {
 		return false
 	}
 	return true
@@ -86,7 +86,7 @@ func (C DB) DelKeys() {
 	defer cancel()
 	collection := C.client.Database(GetDbName()).Collection(GetDbCollection())
 	res, err := collection.DeleteMany(ctx, bson.M{})
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("deleted %v documents\n", res.DeletedCount)

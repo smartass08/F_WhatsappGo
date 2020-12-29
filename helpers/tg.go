@@ -26,7 +26,7 @@ func Initialise() *gotgbot.Updater {
 	return updater
 }
 
-func TG_Send(client *gotgbot.Updater ,content string, contactInfo string, retry bool) {
+func TG_Send(client *gotgbot.Updater, content string, contactInfo string, retry bool) {
 	if retry {
 		rand.Seed(time.Now().UnixNano())
 		random := rand.Intn(60-30) + 30

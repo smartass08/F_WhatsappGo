@@ -10,8 +10,8 @@ import (
 
 var db utils.DB
 
-func Login(wac *wa.Conn, isretry bool){
-	if !isretry{
+func Login(wac *wa.Conn, isretry bool) {
+	if !isretry {
 		DelKey()
 	}
 	qrChan := make(chan string)
@@ -22,8 +22,8 @@ func Login(wac *wa.Conn, isretry bool){
 	sess, err := wac.Login(qrChan)
 	if err != nil {
 		log.Printf("error during login: %v\n", err.Error())
-		if strings.Contains(err.Error(), "qr code scan timed out"){
-			if isretry ==  true{
+		if strings.Contains(err.Error(), "qr code scan timed out") {
+			if isretry == true {
 				log.Fatalln("QR didn't got scan 2 times in a row, Exiting..")
 			}
 			Login(wac, true)
@@ -34,23 +34,22 @@ func Login(wac *wa.Conn, isretry bool){
 	return
 }
 
-
 func GetKey() (bool, wa.Session) {
 	db.Access(utils.GetDbUrl())
 	confirm, key := db.GetKey()
-	if confirm != true{
+	if confirm != true {
 		return false, key
 	} else {
-			return true, key
+		return true, key
 	}
 }
 
-func DelKey(){
+func DelKey() {
 	db.Access(utils.GetDbUrl())
 	db.DelKeys() //Deletes all the keys lmfao
 }
 
-func PushKey(access wa.Session){
+func PushKey(access wa.Session) {
 	db.Access(utils.GetDbUrl())
 	db.Addkey(access)
 }

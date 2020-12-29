@@ -11,20 +11,20 @@ import (
 	"syscall"
 	"time"
 )
+
 var wg sync.WaitGroup
 
-func issalive(wac *wa.Conn){
+func issalive(wac *wa.Conn) {
 	defer wg.Done()
 	for {
 		pong, err := wac.AdminTest()
 		log.Printf("Is it alive : %v\n", pong)
 		if !pong || err != nil {
-			if strings.Contains(err.Error(), "connection timed out"){
+			if strings.Contains(err.Error(), "connection timed out") {
 				log.Printf("Client seems to be disconnected, Please check your phone")
 			}
-
 		}
-		time.Sleep(time.Second*5)
+		time.Sleep(time.Second * 5)
 
 	}
 }
@@ -35,34 +35,36 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("\nLatest client version is := %v.%v.%v\n", v[0],v[1],v[2])
+	log.Printf("\nLatest client version is := %v.%v.%v\n", v[0], v[1], v[2])
 	wac, err := wa.NewConnWithOptions(&wa.Options{
 		ShortClientName: "F_whatsappGo",
-		LongClientName: "F_whatsappGo",
-		Timeout: time.Second*15})
+		LongClientName:  "F_whatsappGo",
+		Timeout:         time.Second * 15})
 	if err != nil {
 		panic(err)
 	}
-	wac.SetClientVersion(v[0],v[1],v[2])
+	wac.SetClientVersion(v[0], v[1], v[2])
 
 	check, sess := helpers.GetKey()
-	if check != true{
+	if check != true {
 		log.Println("No access token found on db, Need to login")
 		helpers.Login(wac, false)
 	}
 	log.Println("Got access token, Trying to login")
 	_, err = wac.RestoreWithSession(sess)
-	if err != nil{
-		if strings.Contains(err.Error(), "admin login responded") == true{
+	if err != nil {
+		if strings.Contains(err.Error(), "admin login responded") == true {
 			log.Println("Access token Expired, Need re-login")
 			helpers.Login(wac, false)
 		}
 	}
 	log.Println("login successful")
-	time.Sleep(time.Second*2)
+	time.Sleep(time.Second * 2)
 	wac.AddHandler(&helpers.WaHandlers{C: wac})
 	wg.Add(1)
 	go issalive(wac)
+	wg.Add(1)
+	go helpers.EmailCheckService()
 	//Disconnect safe
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

@@ -41,7 +41,7 @@ func (m *MailService) ParseMail(raw_mail *imap.Message) (string, error) {
 	return mail_body, nil
 }
 
-func (m MailService) MakeUnread(seqnum uint32 ) error {
+func (m MailService) MakeUnread(seqnum uint32) error {
 	_, err := m.service.Select("INBOX", false)
 	if err != nil {
 		log.Fatal(err)
@@ -86,5 +86,13 @@ func (m *MailService) GetNewMessages() ([]*imap.Message, error) {
 
 func NewMailService(username, password, server_addr string) *MailService {
 	mail_service := &MailService{username: username, password: password, serverAddr: server_addr}
+	err := mail_service.Connect()
+	if err != nil {
+		log.Println("Error connecting to imap server : ", err.Error())
+	}
+	err = mail_service.Login()
+	if err != nil {
+		log.Println("Error logging to imap server : ", err.Error())
+	}
 	return mail_service
 }

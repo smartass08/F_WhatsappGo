@@ -4,8 +4,18 @@
   "db_url": "",
   "db_name": "",
   "db_collection": "",
-  "links_to_check": ["meet.google.com", "zoom.com"],
-  "whitelist_words": [""],
-  "blacklist_words": ["oof"],
-  "filter_mode": "blacklist"
+  "links_to_check": [
+    "meet.google.com",
+    "zoom.com"
+  ],
+  "whitelist_words": [
+    ""
+  ],
+  "blacklist_words": [
+    "oof"
+  ],
+  "filter_mode": "",
+  "email_username": "",
+  "email_password": "",
+  "email_imap_link": ""
 }
