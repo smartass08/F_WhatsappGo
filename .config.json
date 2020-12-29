@@ -4,7 +4,8 @@
   "db_url": "",
   "db_name": "",
   "db_collection": "",
-  "whitelist_links": ["meet.google.com", "zoom.com"],
-  "blacklist_links": [""],
-  "filter_mode": "whitelist"
+  "links_to_check": ["meet.google.com", "zoom.com"],
+  "whitelist_words": [""],
+  "blacklist_words": ["oof"],
+  "filter_mode": "blacklist"
 }

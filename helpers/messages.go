@@ -55,8 +55,11 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 			sender_name = fmt.Sprintf("%v | %v", h.C.Store.Chats[message.Info.RemoteJid].Name, h.C.Store.Contacts[jid].Notify)
 		}
 		if utils.MessageValid(message.Text) != false{
-			log.Println(sender_name)
-			TG_Send(tg_client, message.Text, sender_name, false)
+			if utils.LinksValid(message.Text) != false{
+				log.Println(sender_name)
+				TG_Send(tg_client, message.Text, sender_name, false)
+			}
+
 		}
 
 	}
