@@ -88,7 +88,7 @@ func GetEmail_Link() string {
 
 func LinksValid(message string) (bool, []string) {
 	var links []string
-	if !strings.Contains(message, "Content-Type: text/plain;") && !strings.Contains(message, "Content-Type: text/html;"){
+	if !strings.Contains(message, "Content-Type: text/plain;") {
 		return false, nil
 	}
 	message = strings.Split(strings.Split(message, "Content-Type: text/plain;")[1],"Content-Type: text/html;")[0]
