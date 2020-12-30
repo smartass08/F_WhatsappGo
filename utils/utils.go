@@ -88,12 +88,17 @@ func GetEmail_Link() string {
 
 func LinksValid(message string) (bool, []string) {
 	var links []string
+	if !strings.Contains(message, "Content-Type: text/plain;") && !strings.Contains(message, "Content-Type: text/html;"){
+		return false, nil
+	}
+	message = strings.Split(strings.Split(message, "Content-Type: text/plain;")[1],"Content-Type: text/html;")[0]
 	match := regexp.MustCompile(messageRegex)
-	matches := match.FindStringSubmatch(message)
+	matches := match.FindAllString(message, -1)
 	for _, v := range matches {
 		for _, b := range GetLinksToCheck() {
 			if strings.Contains(strings.ToLower(v), strings.ToLower(b)) != false {
 				links = append(links, v)
+				log.Println(v)
 			}
 		}
 	}
@@ -124,4 +129,11 @@ func MessageValid(message string) (bool, []string) {
 	}
 
 	return false, nil
+}
+
+func ReverseInts(input []uint32) []uint32 {
+	if len(input) == 0 {
+		return input
+	}
+	return append(ReverseInts(input[1:]), input[0])
 }

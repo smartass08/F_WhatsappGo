@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"F_WhatsappGo/utils"
 	"errors"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
@@ -41,7 +42,7 @@ func (m *MailService) ParseMail(raw_mail *imap.Message) (string, error) {
 	return mail_body, nil
 }
 
-func (m MailService) MakeUnread(seqnum uint32) error {
+func (m MailService) MakeUnread(seqnum uint32 ) error {
 	_, err := m.service.Select("INBOX", false)
 	if err != nil {
 		log.Fatal(err)
@@ -57,22 +58,42 @@ func (m MailService) MakeUnread(seqnum uint32) error {
 	return err
 }
 
+func (m MailService) MakeRead(seqnum uint32 ) error {
+	_, err := m.service.Select("INBOX", false)
+	if err != nil {
+		log.Fatal(err)
+	}
+	seqSet := new(imap.SeqSet)
+	seqSet.AddNum(seqnum)
+	item := imap.FormatFlagsOp(imap.AddFlags, true)
+	flags := []interface{}{imap.SeenFlag}
+	err = m.service.Store(seqSet, item, flags, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
+
 func (m *MailService) GetNewMessages() ([]*imap.Message, error) {
 	var mails []*imap.Message
-	kek, _ := m.service.Select("INBOX", false)
+	_, _ = m.service.Select("INBOX", false)
 	cri := imap.NewSearchCriteria()
 	cri.WithoutFlags = []string{"\\Seen"}
-	_, err := m.service.Search(cri)
+	uids, err := m.service.Search(cri)
 	if err != nil {
 		return mails, err
 	}
-	from := uint32(1)
-	to := kek.Messages
-	if kek.Messages > 1 {
-		from = kek.Messages - 29
+	uids = utils.ReverseInts(uids)
+	var limited_uids []uint32
+	for i,v := range uids{
+		if i > 30{
+			break
+		}
+		limited_uids = append(limited_uids, v)
 	}
 	seqset := new(imap.SeqSet)
-	seqset.AddRange(from, to)
+	seqset.AddNum(limited_uids...)
 	items := []imap.FetchItem{imap.FetchRFC822}
 	messages := make(chan *imap.Message)
 	go func() {

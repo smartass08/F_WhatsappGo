@@ -59,6 +59,7 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 		}
 		check, _ := utils.MessageValid(message.Text)
 		if check != false {
+			log.Printf("New Invite!, From : %v", sender_info)
 			TG_Send(tg_client, message.Text, sender_info, false)
 		}
 	}
@@ -66,7 +67,7 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 
 func EmailMessages() {
 	defer wg.Done()
-
+	log.Println("Checking for new emails")
 	raw_mesages, err := email.GetNewMessages()
 	if err != nil {
 		log.Println("Error getting new messages from server : ", err.Error())
@@ -77,22 +78,26 @@ func EmailMessages() {
 			log.Println("Error parsing the messages : ", err.Error())
 		}
 		check, links := utils.MessageValid(parsed_message)
-		if !check {
-			err = email.MakeUnread(v.Uid)
+		if check == false {
+			err = email.MakeUnread(v.SeqNum)
 			if err != nil {
 				log.Println("Error making the email as unread : ", err.Error())
 			}
 		} else {
 			from := strings.Split(strings.Split(parsed_message, "From: ")[1], "\n")[0]
-			subject := strings.Split(strings.Split(parsed_message, "Subject: ")[1], "\n")[0]
-			sender_name := fmt.Sprintf("%v | %v", from, subject)
+			subject := "Empty Subject"
+			if strings.Contains(parsed_message, "Subject: ") == true{
+				subject = strings.Split(strings.Split(parsed_message, "Subject: ")[1], "\n")[0]
+			}
+			r := strings.NewReplacer("<", "&lt;", ">", "&gt;")
+			sender_info := fmt.Sprintf("%v | %v", r.Replace(from), subject)
 			var final_links string
 			for _, v := range links {
 				final_links += fmt.Sprintf("%v\n", v)
 			}
-			TG_Send(tg_client, final_links, sender_name, false)
+			log.Printf("New Invite!, From : %v", sender_info)
+			TG_Send(tg_client, final_links, sender_info, false)
 		}
-
 	}
 }
 
