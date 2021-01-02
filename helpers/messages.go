@@ -117,7 +117,12 @@ func EmailMessages() {
 	}
 }
 
-func EmailCheckService() {
+func EmailCheckService(confirm chan bool) {
+	if len(utils.GetEmail_Username()) == 0 || len(utils.GetEmail_Password()) == 0 || len(utils.GetEmail_Link()) == 0 {
+		log.Println("Email service is disabled because some fields related to it are not filled in config.")
+		confirm <- false
+		return
+	}
 	for {
 		wg.Add(1)
 		go EmailMessages()

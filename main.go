@@ -30,8 +30,12 @@ func issalive(wac *wa.Conn) {
 }
 
 func main() {
+	confirmChannel := make(chan bool)
 	wg.Add(1)
-	go helpers.EmailCheckService()
+	go helpers.EmailCheckService(confirmChannel)
+	if <-confirmChannel == false{
+		wg.Done()
+	}
 	//Check latest webui client verion
 	v, err := wa.CheckCurrentServerVersion()
 	if err != nil {
