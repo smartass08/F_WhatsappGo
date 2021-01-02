@@ -4,7 +4,7 @@
  
  #### Requirements:
   1) Whatsapp account. 
-  2) Email account.  //To-Do
+  2) Email account.
  
  #### Steps for running:
   1) Rename `.config.json` to `config.json`
@@ -17,7 +17,7 @@
   3) <del>Needs docker to run because the wrapper library refuses to work properly without it.</del> Selenium can go to hell for all I care.
 
  #### Filtering text:
-  1) You can set `filter_mode` to `blacklist` or `whitelist` to filter stuff accordingly to your need.
+  1) You can set `filter_mode` to `blacklist` or `whitelist` to filter stuff accordingly to your need. Leaving the field empty `""` or `default` will make program to not check for any filters and run in default mode.
   2) Filling the links in`whitelist_links` will force the program to **not** ignore the messages containing the links whereas `blacklist_links` will force the program to ignore the same.
 
 #### Legal:
