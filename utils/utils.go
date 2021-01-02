@@ -2,13 +2,14 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/DusanKasan/parsemail"
 	"io/ioutil"
 	"log"
-	"regexp"
+	"mvdan.cc/xurls/v2"
 	"strings"
 )
 
-const messageRegex string = `http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+`
+//const messageRegex string = `(?:(?:https?|http):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+`
 
 type ConfigJson struct {
 	BOT_TOKEN      string   `json:"bot_token"`
@@ -86,46 +87,98 @@ func GetEmail_Link() string {
 	return Config.EmailLink
 }
 
-func LinksValid(message string) (bool, []string) {
-	var links []string
-	if !strings.Contains(message, "Content-Type: text/plain;") {
-		return false, nil
+func LinksValid(message parsemail.Email, mode string, links []string) (bool, []string) {
+	switch {
+	case mode == "text":
+		links = Getallmatches(message.TextBody)
+
+	case mode == "html":
+		links = Getallmatches(message.HTMLBody)
+		LinksValid(message, "text", links)
 	}
-	message = strings.Split(strings.Split(message, "Content-Type: text/plain;")[1],"Content-Type: text/html;")[0]
-	match := regexp.MustCompile(messageRegex)
-	matches := match.FindAllString(message, -1)
-	for _, v := range matches {
-		for _, b := range GetLinksToCheck() {
-			if strings.Contains(strings.ToLower(v), strings.ToLower(b)) != false {
-				links = append(links, v)
-				log.Println(v)
-			}
-		}
-	}
+
 	if len(links) > 0 {
-		return true, links
+		return true, RemoveDuplicatesStrings(links)
 	}
 	return false, nil
 }
 
-func MessageValid(message string) (bool, []string) {
-	switch {
-	case strings.EqualFold(GetfilterMode(), "blacklist"):
-		for _, v := range Config.Blacklist {
-			if strings.Contains(message, v) != false {
-				return false, nil
+func Cleanlinks(links []string) []string {
+	var cleaned []string
+	for _, v := range links {
+		replacer := strings.NewReplacer(">", "", "<", "", "'", "", `"`, "")
+		cleaned = append(cleaned, replacer.Replace(v))
+	}
+	return cleaned
+}
+func Getallmatches(message string) []string {
+	var links []string
+	match := xurls.Strict()
+	for _, v := range match.FindAllString(message, -1) {
+		for _, b := range GetLinksToCheck() {
+			if strings.Contains(strings.ToLower(v), strings.ToLower(b)) != false {
+				links = append(links, v)
 			}
 		}
-		return LinksValid(message)
+	}
+	return links
+}
+
+func MessageValid(message parsemail.Email, mode string, defaultMessage string) (bool, []string) {
+	var kek []string
+	switch {
+	case strings.EqualFold(GetfilterMode(), "blacklist"):
+		//Check if its a whatsapp message
+		if mode == "default" {
+			for _, v := range Config.Blacklist {
+				//Compare the whatsapp message
+				if strings.Contains(defaultMessage, v) != false {
+					return false, nil
+				}
+			}
+			//Check if the slice is empty or not
+			if len(Getallmatches(defaultMessage)) > 0 {
+				return true, nil
+			}
+		} else {
+			//Do normal operation for emails
+			for _, v := range Config.Blacklist {
+				if strings.Contains(message.TextBody, v) != false {
+					return false, nil
+				}
+			}
+			return LinksValid(message, mode, kek)
+		}
+
 	case strings.EqualFold(GetfilterMode(), "whitelist"):
+		//Check if its a whatsapp message
+		if mode == "default" {
+			for _, v := range Config.Whitelist {
+				//Compare the whatsapp message
+				if strings.Contains(defaultMessage, v) != false {
+					//Check if the slice is empty or not after confirming the whitelisted word is inside the text body
+					if len(Getallmatches(defaultMessage)) > 0 {
+						return true, nil
+					}
+				}
+			}
+			return false, nil
+		}
 		for _, v := range Config.Whitelist {
-			if strings.Contains(message, v) != false {
-				return LinksValid(message)
+			if strings.Contains(message.TextBody, v) != false {
+				return LinksValid(message, mode, kek)
 			}
 		}
 		return false, nil
 	case strings.EqualFold(GetfilterMode(), "default"):
-		return LinksValid(message)
+		if mode == "default" {
+			if len(Getallmatches(defaultMessage)) > 0 {
+				return true, nil
+			}
+			return false, nil
+		} else {
+			return LinksValid(message, mode, kek)
+		}
 	}
 
 	return false, nil
@@ -136,4 +189,19 @@ func ReverseInts(input []uint32) []uint32 {
 		return input
 	}
 	return append(ReverseInts(input[1:]), input[0])
+}
+
+func RemoveDuplicatesStrings(elements []string) []string {
+	encountered := map[string]bool{}
+	// Create a map of all unique elements.
+	for v := range elements {
+		encountered[elements[v]] = true
+	}
+
+	// Place all keys from the map into a slice.
+	var result []string
+	for key := range encountered {
+		result = append(result, key)
+	}
+	return result
 }

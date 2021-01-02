@@ -2,7 +2,9 @@ package helpers
 
 import (
 	"F_WhatsappGo/utils"
+	"bytes"
 	"fmt"
+	"github.com/DusanKasan/parsemail"
 	"github.com/Rhymen/go-whatsapp"
 	"log"
 	"strings"
@@ -57,7 +59,7 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 			}
 			sender_info = fmt.Sprintf("%v | %v", h.C.Store.Chats[message.Info.RemoteJid].Name, h.C.Store.Contacts[jid].Notify)
 		}
-		check, _ := utils.MessageValid(message.Text)
+		check, _ := utils.MessageValid(parsemail.Email{}, "default", message.Text)
 		if check != false {
 			log.Printf("New Invite!, From : %v", sender_info)
 			TG_Send(tg_client, message.Text, sender_info, false)
@@ -69,34 +71,48 @@ func EmailMessages() {
 	defer wg.Done()
 	log.Println("Checking for new emails")
 	raw_mesages, err := email.GetNewMessages()
+	if len(raw_mesages) == 0 {
+		log.Println("No new messages in mail box")
+		return
+	}
 	if err != nil {
 		log.Println("Error getting new messages from server : ", err.Error())
 	}
 	for _, v := range raw_mesages {
-		parsed_message, err := email.ParseMail(v)
+		parsed_bytes, err := email.ParseMail(v)
 		if err != nil {
 			log.Println("Error parsing the messages : ", err.Error())
 		}
-		check, links := utils.MessageValid(parsed_message)
-		if check == false {
-			err = email.MakeUnread(v.SeqNum)
+		for _, vb := range parsed_bytes {
+			emails, err := parsemail.Parse(bytes.NewReader(vb)) // returns Email struct and error
 			if err != nil {
-				log.Println("Error making the email as unread : ", err.Error())
+				fmt.Println(err)
 			}
-		} else {
-			from := strings.Split(strings.Split(parsed_message, "From: ")[1], "\n")[0]
-			subject := "Empty Subject"
-			if strings.Contains(parsed_message, "Subject: ") == true{
-				subject = strings.Split(strings.Split(parsed_message, "Subject: ")[1], "\n")[0]
+
+			check, links := utils.MessageValid(emails, "html", "")
+			if check == false {
+				err = email.MakeUnread(v.SeqNum)
+				if err != nil {
+					log.Println("Error making the email as unread : ", err.Error())
+				}
+			} else {
+				from := "Sender's information unavailable"
+				if len(emails.From) != 0 {
+					from = emails.From[0].String()
+				}
+				if len(emails.Subject) == 0 {
+					emails.Subject = "No subject"
+				}
+
+				r := strings.NewReplacer("<", "&lt;", ">", "&gt;")
+				sender_info := fmt.Sprintf("%v | %v", r.Replace(from), emails.Subject)
+				var final_links string
+				for _, v := range links {
+					final_links += fmt.Sprintf("%v\n", v)
+				}
+				log.Printf("New Invite!, From : %v", sender_info)
+				TG_Send(tg_client, final_links, sender_info, false)
 			}
-			r := strings.NewReplacer("<", "&lt;", ">", "&gt;")
-			sender_info := fmt.Sprintf("%v | %v", r.Replace(from), subject)
-			var final_links string
-			for _, v := range links {
-				final_links += fmt.Sprintf("%v\n", v)
-			}
-			log.Printf("New Invite!, From : %v", sender_info)
-			TG_Send(tg_client, final_links, sender_info, false)
 		}
 	}
 }
@@ -106,7 +122,6 @@ func EmailCheckService() {
 		wg.Add(1)
 		go EmailMessages()
 		wg.Wait()
-		time.Sleep(time.Second * 1)
-
+		time.Sleep(time.Minute)
 	}
 }

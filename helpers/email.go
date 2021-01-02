@@ -25,8 +25,8 @@ func (m *MailService) Login() error {
 	return m.service.Login(m.username, m.password)
 }
 
-func (m *MailService) ParseMail(raw_mail *imap.Message) (string, error) {
-	var mail_body string
+func (m *MailService) ParseMail(raw_mail *imap.Message) ([][]byte, error) {
+	var mail_body [][]byte
 	for _, value := range raw_mail.Body {
 		length := value.Len()
 		buf := make([]byte, length)
@@ -37,12 +37,12 @@ func (m *MailService) ParseMail(raw_mail *imap.Message) (string, error) {
 		if n != length {
 			return mail_body, errors.New("Didn't read correct length")
 		}
-		mail_body += string(buf)
+		mail_body = append(mail_body, buf)
 	}
 	return mail_body, nil
 }
 
-func (m MailService) MakeUnread(seqnum uint32 ) error {
+func (m MailService) MakeUnread(seqnum uint32) error {
 	_, err := m.service.Select("INBOX", false)
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +58,7 @@ func (m MailService) MakeUnread(seqnum uint32 ) error {
 	return err
 }
 
-func (m MailService) MakeRead(seqnum uint32 ) error {
+func (m MailService) MakeRead(seqnum uint32) error {
 	_, err := m.service.Select("INBOX", false)
 	if err != nil {
 		log.Fatal(err)
@@ -74,7 +74,6 @@ func (m MailService) MakeRead(seqnum uint32 ) error {
 	return err
 }
 
-
 func (m *MailService) GetNewMessages() ([]*imap.Message, error) {
 	var mails []*imap.Message
 	_, _ = m.service.Select("INBOX", false)
@@ -86,8 +85,8 @@ func (m *MailService) GetNewMessages() ([]*imap.Message, error) {
 	}
 	uids = utils.ReverseInts(uids)
 	var limited_uids []uint32
-	for i,v := range uids{
-		if i > 30{
+	for i, v := range uids {
+		if i > 30 {
 			break
 		}
 		limited_uids = append(limited_uids, v)

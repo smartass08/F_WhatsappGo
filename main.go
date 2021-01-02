@@ -30,6 +30,8 @@ func issalive(wac *wa.Conn) {
 }
 
 func main() {
+	wg.Add(1)
+	go helpers.EmailCheckService()
 	//Check latest webui client verion
 	v, err := wa.CheckCurrentServerVersion()
 	if err != nil {
@@ -63,8 +65,7 @@ func main() {
 	wac.AddHandler(&helpers.WaHandlers{C: wac})
 	wg.Add(1)
 	go issalive(wac)
-	wg.Add(1)
-	go helpers.EmailCheckService()
+
 	//Disconnect safe
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
