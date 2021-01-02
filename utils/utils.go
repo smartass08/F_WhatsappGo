@@ -90,7 +90,7 @@ func GetEmail_Link() string {
 func LinksValid(message parsemail.Email, mode string, links []string) (bool, []string) {
 	switch {
 	case mode == "text":
-		links = Getallmatches(message.TextBody)
+		links = append(links, Getallmatches(message.TextBody)...)
 
 	case mode == "html":
 		links = Getallmatches(message.HTMLBody)
