@@ -41,7 +41,7 @@ func (h *WaHandlers) HandleTextMessage(message whatsapp.TextMessage) {
 	if !message.Info.FromMe {
 		info_channel, err := h.C.GetGroupMetaData(message.Info.RemoteJid)
 		if err != nil {
-			log.Printf("Can't get information about the message, Reason %s\n", err.Error())
+			log.Printf("Can't get information about the message, Reason %s\n", err)
 		}
 		info := <-info_channel
 
@@ -123,6 +123,7 @@ func EmailCheckService(confirm chan bool) {
 		confirm <- false
 		return
 	}
+	confirm <- true
 	for {
 		wg.Add(1)
 		go EmailMessages()
